@@ -34,19 +34,18 @@ function check_system(){
 function install_ss_panel_mod_UIm(){
 	yum install unzip zip git -y
 	cd /home/wwwroot/
-	cd fly.portside.top
+	cd ss.portside.top
 	yum update nss curl iptables -y
 	#克隆项目
 	git clone https://github.com/marisn2017/ss-panel-v3-mod_Uim-resource.git tmp && mv tmp/.git . && rm -rf tmp && git reset --hard
 	#复制配置文件
 	# cp config/.config.php.example config/.config.php
 	#移除防跨站攻击(open_basedir)
-	cd /home/wwwroot/fly.portside.top
+	cd /home/wwwroot/ss.portside.top
 	chattr -i .user.ini
 	rm -rf .user.ini
 	sed -i 's/^fastcgi_param PHP_ADMIN_VALUE/#fastcgi_param PHP_ADMIN_VALUE/g' /usr/local/nginx/conf/fastcgi.conf
-    /etc/init.d/php-fpm restart
-    /etc/init.d/nginx reload
+    	lnmp restart
 	#设置文件权限
 	chown -R root:root *
 	chmod -R 777 *
@@ -55,25 +54,25 @@ function install_ss_panel_mod_UIm(){
 	wget -N -P /usr/local/nginx/conf/ --no-check-certificate "https://raw.githubusercontent.com/marisn2017/ss-panel-v3-mod_Uim/master/nginx.conf"
 	wget -N -P /usr/local/php/etc/ --no-check-certificate "https://raw.githubusercontent.com/marisn2017/ss-panel-v3-mod_Uim/master/php.ini"
 	#开启scandir()函数
-	sed -i 's/,scandir//g' /www/config_tmp/php/php.ini
+	sed -i 's/,scandir//g' /usr/local/php/etc/php.ini
 	#service nginx restart #重启Nginx
 	# mysql -uroot -proot -e"create database sspanel;" 
 	# mysql -uroot -proot -e"use sspanel;" 
-	# mysql -uroot -proot sspanel < /home/wwwroot/fly.portside.top/sql/sspanel.sql
+	# mysql -uroot -proot sspanel < /home/wwwroot/ss.portside.top/sql/sspanel.sql
 	mysql -hlocalhost -uroot -proot <<EOF
 create database sspanel;
 use sspanel;
-source /home/wwwroot/fly.portside.top/sql/sspanel.sql;
+source /home/wwwroot/ss.portside.top/sql/sspanel.sql;
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'root' WITH GRANT OPTION;
 flush privileges;
 EOF
-	cd /home/wwwroot/fly.portside.top
+	cd /home/wwwroot/ss.portside.top
 	#安装composer
 	php composer.phar install
 	mv tool/alipay-f2fpay vendor/
 	mv -f tool/cacert.pem vendor/guzzle/guzzle/src/Guzzle/Http/Resources/
 	#mv -f tool/autoload_classmap.php vendor/composer/
-	wget -N -P  /home/wwwroot/fly.portside.top/vendor/composer --no-check-certificate "https://raw.githubusercontent.com/marisn2017/ss-panel-v3-mod_Uim/master/autoload_classmap.php"
+	wget -N -P  /home/wwwroot/ss.portside.top/vendor/composer --no-check-certificate "https://raw.githubusercontent.com/marisn2017/ss-panel-v3-mod_Uim/master/autoload_classmap.php"
 	php xcat syncusers            #同步用户
 	php xcat initQQWry            #下载IP解析库
 	php xcat resetTraffic         #重置流量
@@ -84,12 +83,12 @@ EOF
 	echo 'SHELL=/bin/bash' >> /var/spool/cron/root
 	echo 'PATH=/sbin:/bin:/usr/sbin:/usr/bin' >> /var/spool/cron/root
 	echo '*/20 * * * * /usr/sbin/ntpdate pool.ntp.org > /dev/null 2>&1' >> /var/spool/cron/root
-	echo '0 0 * * * php -n /home/wwwroot/fly.portside.top/xcat dailyjob' >> /var/spool/cron/root
-	echo '*/1 * * * * php /home/wwwroot/fly.portside.top/xcat checkjob' >> /var/spool/cron/root
-	echo "*/1 * * * * php /home/wwwroot/fly.portside.top/xcat syncnode" >> /var/spool/cron/root
-	echo '30 22 * * * php /home/wwwroot/fly.portside.top/xcat sendDiaryMail' >> /var/spool/cron/root
+	echo '0 0 * * * php -n /home/wwwroot/ss.portside.top/xcat dailyjob' >> /var/spool/cron/root
+	echo '*/1 * * * * php /home/wwwroot/ss.portside.top/xcat checkjob' >> /var/spool/cron/root
+	echo "*/1 * * * * php /home/wwwroot/ss.portside.top/xcat syncnode" >> /var/spool/cron/root
+	echo '30 22 * * * php /home/wwwroot/ss.portside.top/xcat sendDiaryMail' >> /var/spool/cron/root
 	/sbin/service crond restart
-	if [ -d "/home/wwwroot/fly.portside.top/" ];then
+	if [ -d "/home/wwwroot/ss.portside.top/" ];then
 	clear
 	echo "${Green}ss-panel-v3-mod_UIChanges安装成功~${Font}"
 	else
